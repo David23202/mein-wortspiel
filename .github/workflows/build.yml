@@ -4,6 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+    # Wir wechseln auf eine extrem stabile Langzeitversion (LTS)
     runs-on: ubuntu-22.04
 
     steps:
@@ -15,14 +16,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install System Dependencies
+      - name: Clear and Fix Package Manager
+        # Falls Paketlisten blockiert sind, räumen wir diese radikal auf
         run: |
-          sudo apt-get update
-          sudo apt-get install -y scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base xclip xsel libjpeg-dev openjdk-17-jdk ccache
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get clean
+
+      - name: Install System Dependencies
+        # Wir fügen ein "|| true" hinzu, damit ein kleiner Verbindungsfehler den Bau nicht abbricht
+        run: |
+          sudo apt-get update -y || true
+          sudo apt-get install -y --no-install-recommends scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base xclip xsel libjpeg-dev openjdk-17-jdk ccache zip unzip
 
       - name: Install Buildozer and Cython
         run: |
-          pip install --upgrade pip
+          pip install --upgrade pip setuptools wheel
           pip install buildozer cython==0.29.36 kivy==2.3.0 pillow
 
       - name: Build APK with Buildozer
