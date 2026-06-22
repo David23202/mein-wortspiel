@@ -46,3 +46,4 @@ jobs:
           name: WortGuru-App
           path: bin/*.apk
           if-no-files-found: warn
+  # Aenderung damit es geht
