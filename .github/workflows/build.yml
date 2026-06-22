@@ -1,22 +1,36 @@
 name: Build APK
+
 on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          repository_path: .
-          buildozer_version: stable
+          python-version: '3.10'
 
-      - name: Upload APK Artifact
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base xclip xsel libjpeg-dev openjdk-17-jdk ccache
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36 kivy==2.3.0 pillow
+
+      - name: Build APK with Buildozer
+        run: |
+          yes | buildozer -v android debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: WortGuru-Spieldatei
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: WortGuru-App
+          path: bin/*.apk
