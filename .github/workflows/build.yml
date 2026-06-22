@@ -4,7 +4,6 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    # Wir wechseln auf eine extrem stabile Langzeitversion (LTS)
     runs-on: ubuntu-22.04
 
     steps:
@@ -16,17 +15,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Clear and Fix Package Manager
-        # Falls Paketlisten blockiert sind, räumen wir diese radikal auf
+      - name: Install Android Java Kit
+        # Wir installieren NUR noch Java, da alle anderen Bibliotheken auf Ubuntu 22.04 bereits vorinstalliert sind.
         run: |
-          sudo rm -rf /var/lib/apt/lists/*
-          sudo apt-get clean
-
-      - name: Install System Dependencies
-        # Wir fügen ein "|| true" hinzu, damit ein kleiner Verbindungsfehler den Bau nicht abbricht
-        run: |
-          sudo apt-get update -y || true
-          sudo apt-get install -y --no-install-recommends scons libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base xclip xsel libjpeg-dev openjdk-17-jdk ccache zip unzip
+          sudo apt-get update -y
+          sudo apt-get install -y openjdk-17-jdk zip unzip
 
       - name: Install Buildozer and Cython
         run: |
@@ -34,6 +27,7 @@ jobs:
           pip install buildozer cython==0.29.36 kivy==2.3.0 pillow
 
       - name: Build APK with Buildozer
+        # Wir unterdrücken eventuelle Terminal-Blockaden komplett
         run: |
           yes | buildozer -v android debug
 
