@@ -32,13 +32,11 @@ jobs:
           pip install buildozer cython==0.29.36 kivy==2.3.0
 
       - name: Build APK with Buildozer
-        # Wir erzwingen die Ausführung direkt im GitHub-Arbeitsverzeichnis
+        # Wir haben das "buildozer android clean" entfernt, damit die SDK-Pfade intakt bleiben
         run: |
           export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-          buildozer android clean || true
           yes | buildozer -v android debug
-        working-directory: ${{ github.workspace }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -46,4 +44,3 @@ jobs:
           name: WortGuru-App
           path: bin/*.apk
           if-no-files-found: warn
-  # Aenderung damit es geht
