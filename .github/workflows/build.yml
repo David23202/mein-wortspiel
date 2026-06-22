@@ -15,11 +15,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Build-Essential Tools
-        # Diese minimalen Paket-Werkzeuge benötigt der Compiler, um Python in APK umzuwandeln
+      # Wir nutzen das offizielle Java-Tool, um Fehler beim Android-SDK zu vermeiden
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android Build Essentials
+        # Diese Werkzeuge benötigt der Ubuntu-Kernel zwingend zum Kompilieren der C-Inhalte von Kivy
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev zip unzip
+          sudo apt-get install -y --no-install-recommends autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev zip unzip
 
       - name: Install Python Dependencies
         run: |
@@ -27,10 +34,14 @@ jobs:
           pip install buildozer cython==0.29.36 kivy==2.3.0 pillow
 
       - name: Build APK with Buildozer
-        # Falls buildozer-Zwischendateien hängen, räumen wir vorher kurz auf
+        # Wir übergeben die genauen Pfade und erzwingen die Ausführung im aktuellen Verzeichnis
         run: |
+          export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
           buildozer android clean || true
           yes | buildozer -v android debug
+        env:
+          PLAYSTORE_BUILD: light
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
