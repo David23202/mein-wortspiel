@@ -15,20 +15,21 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Android Java Kit
-        # Wir installieren NUR noch Java, da alle anderen Bibliotheken auf Ubuntu 22.04 bereits vorinstalliert sind.
+      - name: Install Build-Essential Tools
+        # Diese minimalen Paket-Werkzeuge benötigt der Compiler, um Python in APK umzuwandeln
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y openjdk-17-jdk zip unzip
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev zip unzip
 
-      - name: Install Buildozer and Cython
+      - name: Install Python Dependencies
         run: |
           pip install --upgrade pip setuptools wheel
           pip install buildozer cython==0.29.36 kivy==2.3.0 pillow
 
       - name: Build APK with Buildozer
-        # Wir unterdrücken eventuelle Terminal-Blockaden komplett
+        # Falls buildozer-Zwischendateien hängen, räumen wir vorher kurz auf
         run: |
+          buildozer android clean || true
           yes | buildozer -v android debug
 
       - name: Upload APK
